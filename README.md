@@ -1,42 +1,42 @@
-# Garbage Image Classification
+# garbage-image-classifier
 
 [![Python](https://img.shields.io/badge/Python-3.10+-3776ab?style=flat-square&logo=python&logoColor=white)](https://www.python.org/)
 [![TensorFlow](https://img.shields.io/badge/TensorFlow-2.19+-ff6f00?style=flat-square&logo=tensorflow&logoColor=white)](https://www.tensorflow.org/)
 [![Keras](https://img.shields.io/badge/Keras-3.x-d00000?style=flat-square&logo=keras&logoColor=white)](https://keras.io/)
 [![License](https://img.shields.io/badge/License-MIT-yellow?style=flat-square)](LICENSE)
 
-> A deep learning model that classifies waste images into 12 categories using Transfer Learning (MobileNetV2), deployable across mobile, web, and server platforms.
+> Model deep learning untuk mengklasifikasikan gambar sampah ke dalam 12 kategori menggunakan Transfer Learning (MobileNetV2), yang dapat di-deploy di platform mobile, web, maupun server.
 
-[Overview](#overview) • [Dataset](#dataset) • [Model Architecture](#model-architecture) • [Results](#results) • [Project Structure](#project-structure) • [Getting Started](#getting-started) • [Inference](#inference)
+[Tentang Proyek](#tentang-proyek) • [Dataset](#dataset) • [Arsitektur Model](#arsitektur-model) • [Hasil](#hasil) • [Struktur Proyek](#struktur-proyek) • [Cara Penggunaan](#cara-penggunaan) • [Inferensi](#inferensi)
 
 ---
 
-## Overview
+## Tentang Proyek
 
-This project builds an image classification model capable of identifying 12 types of garbage from photos. The model uses **MobileNetV2** pretrained on ImageNet as a feature extractor, with a custom classification head trained on the garbage dataset. The final model is exported in three formats — SavedModel, TF-Lite, and TensorFlow.js — enabling deployment across server, mobile, and browser environments.
+Proyek ini membangun model klasifikasi gambar yang mampu mengidentifikasi 12 jenis sampah dari foto. Model menggunakan **MobileNetV2** yang telah dilatih pada ImageNet sebagai feature extractor, dengan classification head khusus yang dilatih pada dataset sampah. Model akhir diekspor dalam tiga format — SavedModel, TF-Lite, dan TensorFlow.js — sehingga dapat di-deploy di lingkungan server, mobile, maupun browser.
 
-**Key highlights:**
+**Fitur utama:**
 
-- Transfer Learning with MobileNetV2 (fine-tuned)
-- Two-phase training: feature extraction followed by fine-tuning
+- Transfer Learning dengan MobileNetV2 (fine-tuned)
+- Pelatihan dua fase: feature extraction dilanjutkan fine-tuning
 - Callbacks: EarlyStopping, ReduceLROnPlateau, ModelCheckpoint
-- Test accuracy: **95.81%** across 12 classes
-- Multi-format export: SavedModel, TF-Lite (quantized), TFJS
+- Akurasi test: **95,81%** pada 12 kelas
+- Ekspor multi-format: SavedModel, TF-Lite (quantized), TFJS
 
 ---
 
 ## Dataset
 
-**Source:** [Garbage Classification — Kaggle](https://www.kaggle.com/datasets/mostafaabla/garbage-classification)
+**Sumber:** [Garbage Classification — Kaggle](https://www.kaggle.com/datasets/mostafaabla/garbage-classification)
 
-| Property | Value |
+| Properti | Nilai |
 |---|---|
-| Total images | 15,515 |
-| Number of classes | 12 |
-| Image resolution | Non-uniform (varies per image) |
-| Split ratio | 70% train / 15% val / 15% test |
+| Total gambar | 15.515 |
+| Jumlah kelas | 12 |
+| Resolusi gambar | Tidak seragam (bervariasi per gambar) |
+| Rasio pembagian | 70% train / 15% validasi / 15% test |
 
-**Classes:**
+**Kelas yang diklasifikasikan:**
 
 | | | | |
 |---|---|---|---|
@@ -45,18 +45,18 @@ This project builds an image classification model capable of identifying 12 type
 | plastic | shoes | trash | white-glass |
 
 > [!NOTE]
-> Images in this dataset have non-uniform resolutions and are resized to 224×224 during preprocessing. No manual resolution normalization is applied prior to splitting.
+> Gambar dalam dataset ini memiliki resolusi yang tidak seragam dan di-resize ke 224×224 saat preprocessing. Tidak ada normalisasi resolusi manual yang dilakukan sebelum proses splitting.
 
 ---
 
-## Model Architecture
+## Arsitektur Model
 
 ```
 Input (224 × 224 × 3)
         │
-MobileNetV2 (pretrained on ImageNet)
-  Phase 1 → fully frozen
-  Phase 2 → top 30 layers unfrozen (fine-tuning)
+MobileNetV2 (pretrained ImageNet)
+  Fase 1 → seluruh layer dibekukan
+  Fase 2 → 30 layer terakhir dibuka (fine-tuning)
         │
 Global Average Pooling
         │
@@ -67,86 +67,85 @@ Dense(128) → BatchNormalization → Dropout(0.3)
 Dense(12, activation='softmax')
 ```
 
-| Parameter | Value |
+| Parameter | Nilai |
 |---|---|
 | Base model | MobileNetV2 |
-| Input size | 224 × 224 |
-| Total params | 2,621,900 |
-| Trainable params (Phase 1) | 363,148 |
-| Optimizer (Phase 1) | Adam (lr=1e-3) |
-| Optimizer (Phase 2) | Adam (lr=1e-5) |
+| Ukuran input | 224 × 224 |
+| Total parameter | 2.621.900 |
+| Parameter dilatih (Fase 1) | 363.148 |
+| Optimizer (Fase 1) | Adam (lr=1e-3) |
+| Optimizer (Fase 2) | Adam (lr=1e-5) |
 | Loss function | Categorical Crossentropy |
 
-**Augmentation** (training set only):
+**Augmentasi data** (hanya pada training set):
 
-- Random rotation (±30°)
-- Width & height shift (±20%)
-- Shear and zoom (±15–20%)
+- Rotasi acak (±30°)
+- Pergeseran horizontal & vertikal (±20%)
+- Shear dan zoom (±15–20%)
 - Horizontal flip
-- Nearest-fill for empty pixels
+- Nearest-fill untuk piksel kosong
 
 ---
 
-## Results
+## Hasil
 
-| Metric | Value |
+| Metrik | Nilai |
 |---|---|
-| Validation Accuracy | 95.26% |
-| Test Accuracy | **95.81%** |
-| Test Loss | — |
+| Akurasi Validasi | 95,26% |
+| Akurasi Test | **95,81%** |
 
-**Per-class performance (test set):**
+**Performa per kelas (test set):**
 
-| Class | Precision | Recall | F1-Score |
-|---|---|---|---|
-| battery | 0.9929 | 0.9790 | 0.9859 |
-| biological | 0.9932 | 0.9732 | 0.9831 |
-| brown-glass | 0.9438 | 0.9130 | 0.9282 |
-| cardboard | 0.9847 | 0.9556 | 0.9699 |
-| clothes | 0.9863 | 0.9900 | 0.9881 |
-| green-glass | 0.9355 | 0.9158 | 0.9255 |
-| metal | 0.8295 | 0.9224 | 0.8735 |
-| paper | 0.9490 | 0.9430 | 0.9460 |
-| plastic | 0.8613 | 0.9008 | 0.8806 |
-| shoes | 0.9636 | 0.9765 | 0.9700 |
-| trash | 1.0000 | 0.9811 | 0.9905 |
-| white-glass | 0.8889 | 0.8205 | 0.8533 |
-| **weighted avg** | **0.9589** | **0.9581** | **0.9582** |
+| Kelas | Precision | Recall | F1-Score | Support |
+|---|---|---|---|---|
+| battery | 0,9929 | 0,9790 | 0,9859 | 143 |
+| biological | 0,9932 | 0,9732 | 0,9831 | 149 |
+| brown-glass | 0,9438 | 0,9130 | 0,9282 | 92 |
+| cardboard | 0,9847 | 0,9556 | 0,9699 | 135 |
+| clothes | 0,9863 | 0,9900 | 0,9881 | 800 |
+| green-glass | 0,9355 | 0,9158 | 0,9255 | 95 |
+| metal | 0,8295 | 0,9224 | 0,8735 | 116 |
+| paper | 0,9490 | 0,9430 | 0,9460 | 158 |
+| plastic | 0,8613 | 0,9008 | 0,8806 | 131 |
+| shoes | 0,9636 | 0,9765 | 0,9700 | 298 |
+| trash | 1,0000 | 0,9811 | 0,9905 | 106 |
+| white-glass | 0,8889 | 0,8205 | 0,8533 | 117 |
+| **weighted avg** | **0,9589** | **0,9581** | **0,9582** | **2340** |
 
 > [!TIP]
-> Classes with lower F1-scores (`metal`, `plastic`, `white-glass`) share similar visual characteristics. Performance can be improved by adding more training data or applying class-specific augmentation for these categories.
+> Kelas dengan F1-score lebih rendah (`metal`, `plastic`, `white-glass`) memiliki karakteristik visual yang serupa satu sama lain. Performa dapat ditingkatkan dengan menambah data training atau menerapkan augmentasi khusus untuk kategori-kategori tersebut.
 
 ---
 
-## Project Structure
+## Struktur Proyek
 
 ```
-submission/
-├── saved_model/            # TensorFlow SavedModel format
+garbage-image-classifier/
+├── saved_model/            # Format TensorFlow SavedModel
 │   ├── saved_model.pb
 │   └── variables/
-├── tflite/                 # TF-Lite format (optimized for mobile)
+├── tflite/                 # Format TF-Lite (dioptimalkan untuk mobile)
 │   ├── model.tflite
 │   └── label.txt
-├── tfjs_model/             # TensorFlow.js format (for browser)
+├── tfjs_model/             # Format TensorFlow.js (untuk browser)
 │   ├── model.json
 │   └── group1-shard1of1.bin
-├── notebook.ipynb          # Full training notebook
+├── notebook.ipynb          # Notebook pelatihan lengkap
 ├── requirements.txt
 └── README.md
 ```
 
 ---
 
-## Getting Started
+## Cara Penggunaan
 
-### Prerequisites
+### Prasyarat
 
 - Python 3.10+
-- Google Colab (recommended) with T4 GPU, or a local GPU environment
-- Kaggle account with `kaggle.json` API token
+- Google Colab (direkomendasikan) dengan GPU T4, atau lingkungan GPU lokal
+- Akun Kaggle dengan API token `kaggle.json`
 
-### Installation
+### Instalasi
 
 ```bash
 pip install -r requirements.txt
@@ -155,33 +154,33 @@ pip install -r requirements.txt
 ### Download Dataset
 
 ```bash
-# Place kaggle.json in ~/.kaggle/ first
+# Letakkan kaggle.json di ~/.kaggle/ terlebih dahulu
 kaggle datasets download -d mostafaabla/garbage-classification
 unzip garbage-classification.zip -d garbage_raw
 ```
 
-### Run the Notebook
+### Menjalankan Notebook
 
-Open `notebook.ipynb` in Google Colab and run all cells sequentially. The notebook covers:
+Buka `notebook.ipynb` di Google Colab dan jalankan semua sel secara berurutan. Notebook mencakup:
 
-1. Library imports
-2. Dataset download and exploration (EDA)
-3. Data splitting (70/15/15)
-4. Augmentation and data generators
-5. Model building (MobileNetV2 + custom head)
-6. Two-phase training with callbacks
-7. Evaluation (classification report + confusion matrix)
-8. Model export (SavedModel, TF-Lite, TFJS)
-9. Inference demonstration
+1. Import library
+2. Download dan eksplorasi dataset (EDA)
+3. Pembagian data (70/15/15)
+4. Augmentasi dan data generator
+5. Pembangunan model (MobileNetV2 + custom head)
+6. Pelatihan dua fase dengan callbacks
+7. Evaluasi (classification report + confusion matrix)
+8. Ekspor model (SavedModel, TF-Lite, TFJS)
+9. Demonstrasi inferensi
 
 > [!IMPORTANT]
-> Enable GPU runtime in Colab before running: **Runtime → Change runtime type → T4 GPU**. Training on CPU may take several hours.
+> Aktifkan GPU runtime di Colab sebelum menjalankan notebook: **Runtime → Change runtime type → T4 GPU**. Pelatihan tanpa GPU dapat memakan waktu berjam-jam.
 
 ---
 
-## Inference
+## Inferensi
 
-### Using TF-Lite (Python)
+### Menggunakan TF-Lite (Python)
 
 ```python
 import tensorflow as tf
@@ -195,16 +194,16 @@ interpreter.allocate_tensors()
 input_details  = interpreter.get_input_details()
 output_details = interpreter.get_output_details()
 
-# Load class labels
+# Load label kelas
 with open("tflite/label.txt") as f:
     class_names = f.read().splitlines()
 
-# Preprocess image
-img = Image.open("your_image.jpg").convert("RGB").resize((224, 224))
+# Preprocess gambar
+img = Image.open("gambar_sampah.jpg").convert("RGB").resize((224, 224))
 img_array = np.array(img, dtype=np.float32) / 255.0
 img_array = np.expand_dims(img_array, axis=0)
 
-# Run inference
+# Jalankan inferensi
 interpreter.set_tensor(input_details[0]['index'], img_array)
 interpreter.invoke()
 output = interpreter.get_tensor(output_details[0]['index'])[0]
@@ -212,26 +211,26 @@ output = interpreter.get_tensor(output_details[0]['index'])[0]
 pred_class = class_names[np.argmax(output)]
 confidence = np.max(output) * 100
 
-print(f"Predicted class : {pred_class}")
-print(f"Confidence      : {confidence:.2f}%")
+print(f"Kelas prediksi : {pred_class}")
+print(f"Kepercayaan    : {confidence:.2f}%")
 ```
 
-### Using SavedModel (Python)
+### Menggunakan SavedModel (Python)
 
 ```python
 import tensorflow as tf
 
 model = tf.saved_model.load("saved_model")
-# Preprocess image to (1, 224, 224, 3) float32 tensor normalized to [0, 1]
-# then call model(image_tensor)
+# Preprocess gambar ke tensor (1, 224, 224, 3) float32 ternormalisasi ke [0, 1]
+# lalu panggil model(image_tensor)
 ```
 
 ---
 
-## Resources
+## Referensi
 
-- [TensorFlow Documentation](https://www.tensorflow.org/api_docs)
-- [Keras Transfer Learning Guide](https://keras.io/guides/transfer_learning/)
+- [Dokumentasi TensorFlow](https://www.tensorflow.org/api_docs)
+- [Panduan Transfer Learning Keras](https://keras.io/guides/transfer_learning/)
 - [MobileNetV2 Paper](https://arxiv.org/abs/1801.04381)
-- [Garbage Classification Dataset](https://www.kaggle.com/datasets/mostafaabla/garbage-classification)
-- [Dicoding Machine Learning Course](https://www.dicoding.com/academies/185)
+- [Dataset Garbage Classification](https://www.kaggle.com/datasets/mostafaabla/garbage-classification)
+- [Kelas Machine Learning Dicoding](https://www.dicoding.com/academies/185)
